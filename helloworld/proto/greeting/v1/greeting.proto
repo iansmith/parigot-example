@@ -1,6 +1,7 @@
 syntax ="proto3";
-package methodcall.bar.v1;
-option go_package="greeting/v1/greeting;greeting";
+import "protosupport/v1/protosupport.proto";
+package greeting.v1;
+option go_package="greeting/v1;greeting";
 
 // Greeting is a microservice with a very simple job, return a greeting in
 // language selected from the Tongue enum.
@@ -11,7 +12,7 @@ service Greeting {
 
   // FetchGreeting returns a greeting in the language given by the 
   // Request, field "tongue".
-  rpc FetchGreeting(FetchGreetingRequest) returns (FetchGreetingResponse) = 1;
+  rpc FetchGreeting(FetchGreetingRequest) returns (FetchGreetingResponse);
 }
 
 // which language do you want?
