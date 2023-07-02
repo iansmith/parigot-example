@@ -1,0 +1,6 @@
+{
+    "editor.insertSpaces": false,
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "workbench.editor.limit.excludeDirty": false,
+    "workbench.colorTheme": "Visual Studio Light"
+}
