@@ -30,11 +30,11 @@ clean:
 	rm -rf g/*
 	
 
-PARIGOT_VERSION=b7cb4d8d
+PARIGOT_VERSION=54bda20b
 
 # this needs to be called once when you open the dev container
 # to initialize the tools. you will also need to call it if you
-# do a "go get github.com/iansmith/parigot" or because the version
+# do a "go get github.com/iansmith/parigot" or similar because the version
 # affects the tools (runner and protoc-gen-parigot) and
 # the lib, syscall.so.
 .PHONY:tools

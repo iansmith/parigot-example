@@ -6,6 +6,7 @@ import (
 	"github.com/iansmith/parigot-example/hello-world/g/greeting/v1"
 	"github.com/iansmith/parigot/api/shared/id"
 	pcontext "github.com/iansmith/parigot/context"
+	"github.com/iansmith/parigot/g/syscall/v1"
 	lib "github.com/iansmith/parigot/lib/go"
 	"github.com/iansmith/parigot/lib/go/future"
 )
@@ -13,7 +14,9 @@ import (
 func main() {
 	ctx := pcontext.NewContextWithContainer(pcontext.GuestContext(context.Background()), "[greeting]main")
 	impl := &myService{}
-	greeting.Init(ctx, []lib.MustRequireFunc{}, impl)
+	binding := greeting.Init(ctx, []lib.MustRequireFunc{}, impl)
+	kerr := greeting.Run(ctx, binding, greeting.TimeoutInMillis, nil)
+	pcontext.Errorf(ctx, "error caused run to exit in greeting: %s", syscall.KernelErr_name[int32(kerr)])
 }
 
 // myService is the true implementation of the greeting service.

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/iansmith/parigot-example/hello-world/g/greeting/v1"
 	"github.com/iansmith/parigot/g/syscall/v1"
@@ -19,6 +20,7 @@ func main() {
 	defer func() {
 		if r := recover(); r != nil {
 			pcontext.Infof(ctx, "helloworld: trapped a panic in the guest side: %v", r)
+			debug.PrintStack()
 		}
 		pcontext.Dump(ctx)
 	}()
@@ -32,10 +34,12 @@ func main() {
 	greetFuture := greetService.FetchGreeting(ctx, req)
 	greetFuture.Method.Success(func(response *greeting.FetchGreetingResponse) {
 		pcontext.Infof(ctx, "%s, world", response.Greeting)
+		pcontext.Dump(ctx)
 		syscallguest.Exit(0)
 	})
 	greetFuture.Method.Failure(func(err greeting.GreetErr) {
 		pcontext.Errorf(ctx, "failed to fetch greeting: %s", greeting.GreetErr_name[int32(err)])
+		pcontext.Dump(ctx)
 		syscallguest.Exit(1)
 	})
 	clientOnlyRun(ctx)
