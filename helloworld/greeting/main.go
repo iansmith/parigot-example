@@ -11,11 +11,24 @@ import (
 	"github.com/iansmith/parigot/lib/go/future"
 )
 
+// All services have a main.  The services should not really "start", however
+// until Ready() is called because their dependencies are only guaranteed
+// to be up when Ready() is reached.
 func main() {
+	// create a container for logging into
 	ctx := pcontext.NewContextWithContainer(pcontext.GuestContext(context.Background()), "[greeting]main")
+
+	// the implementation of the service (no state right now)
 	impl := &myService{}
+
+	// Init initiaizes a service and normally receives a list of functions
+	// that indicate dependencies, but we don't have any here.
 	binding := greeting.Init(ctx, []lib.MustRequireFunc{}, impl)
+
+	// Run waits for calls to our single method and should not return.
 	kerr := greeting.Run(ctx, binding, greeting.TimeoutInMillis, nil)
+
+	// Should not happen.
 	pcontext.Errorf(ctx, "error caused run to exit in greeting: %s", syscall.KernelErr_name[int32(kerr)])
 }
 
