@@ -34,7 +34,7 @@ generate:
 # clean
 .PHONY:clean
 clean:
-	rm -rf build/*
+	rm -rf build/hello.p.wasm build/greeting.p.wasm
 	rm -rf g/*
 	
 
