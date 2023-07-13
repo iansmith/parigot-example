@@ -1,18 +1,20 @@
 ## Note that because this is consumed from the hello-world root dir, the paths 
 ## are relative to that dir, not this dir
 
-ParigotLibPath="build/syscall.so"
+[config.dev]
+
+ParigotLibPath="plugin/syscall.so"
 ParigotLibSymbol="ParigotInitialize"
 
 # the names of the microservices here have no significance, they are just for humans
-[microservice.greet]
+[config.dev.microservice.greet]
 WasmPath="build/greeting.p.wasm"
 Arg=[]
 Env=[]
 
 
 # helloworld, it has no services that it implements, it just consumes greet.
-[microservice.helloworld]
+[config.dev.microservice.helloworld]
 WasmPath="build/hello.p.wasm"
 Arg=[]
 Env=[]

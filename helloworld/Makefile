@@ -56,6 +56,6 @@ tools:
 	rm -f /home/parigot/tools/bin/protoc-gen-parigot
 	ln -s /home/parigot/go/bin/protoc-gen-parigot /home/parigot/tools/bin/protoc-gen-parigot
 	go get github.com/iansmith/parigot/api/plugin/syscall/main@${PARIGOT_VERSION}
-	go build -o build/syscall.so -buildmode=plugin github.com/iansmith/parigot/api/plugin/syscall/main
+	go build -o plugin/syscall.so -buildmode=plugin github.com/iansmith/parigot/api/plugin/syscall/main
 
 	
