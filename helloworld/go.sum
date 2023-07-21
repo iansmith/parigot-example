@@ -9,6 +9,8 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.8 h1:e6P7q2lk1O+qJJb4BtCQXlK8vWEO8V1ZeuEdJNOqZyg=
 github.com/iansmith/parigot v0.0.0-20230703162549-f177af5c214f h1:jO79Di66GHTdetDVxAE46ql6dRBUG3YnRJD2gx9BAw0=
 github.com/iansmith/parigot v0.0.0-20230703162549-f177af5c214f/go.mod h1:SziKrXj675XUl5npG0puLaCv+K7I/IEH2CkItn5Sz48=
+github.com/iansmith/parigot v0.0.0-20230713181131-74c8ed1ec230 h1:R1u9dEwGExNrBnTtI/8b/7x5L+O1EMn8ezg2lQS5fzQ=
+github.com/iansmith/parigot v0.0.0-20230713181131-74c8ed1ec230/go.mod h1:SziKrXj675XUl5npG0puLaCv+K7I/IEH2CkItn5Sz48=
 github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxecdEvA=
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=

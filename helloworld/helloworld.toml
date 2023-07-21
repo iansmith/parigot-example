@@ -2,7 +2,6 @@
 ## are relative to that dir, not this dir
 
 [config.dev]
-
 ParigotLibPath="plugin/syscall.so"
 ParigotLibSymbol="ParigotInitialize"
 
