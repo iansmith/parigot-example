@@ -1,6 +1,8 @@
-module github.com/iansmith/parigot-example/hello-world
+module github.com/iansmith/parigot-example/helloworld
 
 go 1.20
+
+replace github.com/iansmith/parigot => /workspaces/parigot/parigot
 
 require google.golang.org/protobuf v1.31.0
 

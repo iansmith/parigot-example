@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime/debug"
 
-	"github.com/iansmith/parigot-example/hello-world/g/greeting/v1"
+	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 
 	syscallguest "github.com/iansmith/parigot/api/guest/syscall"
 	pcontext "github.com/iansmith/parigot/context"

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/iansmith/parigot-example/hello-world/g/greeting/v1"
+	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 	"github.com/iansmith/parigot/api/shared/id"
 	pcontext "github.com/iansmith/parigot/context"
 	"github.com/iansmith/parigot/g/syscall/v1"
