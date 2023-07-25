@@ -63,7 +63,7 @@ func Init(ctx context.Context,require []lib.MustRequireFunc, impl Greeting) *lib
 			f(ctx, myId)
 		}
 	}
-	smmap:=MustWaitSatisfied(ctx, myId, impl)
+	smmap:=MustLaunchService(ctx, myId, impl)
 	launchF:=Launch(ctx, myId, impl)
 
 	// kinda tricky: if this get resolved this exit occurs on the
@@ -71,7 +71,8 @@ func Init(ctx context.Context,require []lib.MustRequireFunc, impl Greeting) *lib
 	launchF.Handle(func (ready bool) {
 		if !ready {
 			pcontext.Errorf(ctx, "ready call on Greeting failed")
-			syscallguest.Exit(1)
+			lib.ExitClient(ctx, 1, myId, "unable to Launch in Init",
+				"unable to call Exit in Init")
 		}
 	})
 	return smmap
@@ -238,6 +239,7 @@ func Register(ctx context.Context) (id.ServiceId, syscall.KernelErr){
 		Service:     "greeting",
 	}
 	req.Fqs = fqs
+	req.HostId = lib.CurrentHostId().Marshal()
 
 	resp, err := syscallguest.Register(req)
     if err!=syscall.KernelErr_NoError{
@@ -279,7 +281,7 @@ func MustExport(ctx context.Context, sid id.ServiceId) {
     }
 }
 
-func WaitSatisfied(ctx context.Context, sid id.ServiceId, impl Greeting) (*lib.ServiceMethodMap,syscall.KernelErr) {
+func LaunchService(ctx context.Context, sid id.ServiceId, impl Greeting) (*lib.ServiceMethodMap,syscall.KernelErr) {
 	smmap, err:=bind(ctx,sid, impl)
 	if err!=0{
 		return  nil,syscall.KernelErr(err)
@@ -291,10 +293,10 @@ func WaitSatisfied(ctx context.Context, sid id.ServiceId, impl Greeting) (*lib.S
     return smmap,syscall.KernelErr_NoError
 }
 
-func MustWaitSatisfied(ctx context.Context, sid id.ServiceId, impl Greeting) *lib.ServiceMethodMap {
-    smmap,err:=WaitSatisfied(ctx,sid,impl)
+func MustLaunchService(ctx context.Context, sid id.ServiceId, impl Greeting) *lib.ServiceMethodMap {
+    smmap,err:=LaunchService(ctx,sid,impl)
     if err!=syscall.KernelErr_NoError {
-        panic("Unable to call WaitSatisfied successfully: "+syscall.KernelErr_name[int32(err)])
+        panic("Unable to call LaunchService successfully: "+syscall.KernelErr_name[int32(err)])
     }
     return smmap
 }
@@ -315,7 +317,8 @@ func FetchGreetingHost(ctx context.Context,inPtr *FetchGreetingRequest) *FutureF
 	if signal {
 		pcontext.Infof(ctx, "FetchGreeting exiting because of parigot signal")
 		pcontext.Dump(ctx)
-		syscallguest.Exit(1)
+		lib.ExitClient(ctx, 1, id.NewServiceId(), "xxx warning, no implementation of unsolicited exit",
+			"xxx warning, no implementation of unsolicited exit and failed trying to exit")
 	}
 	f:=NewFutureFetchGreeting()
 	f.CompleteMethod(ctx,ret,raw)

@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"log"
 	"runtime/debug"
 
 	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 
-	syscallguest "github.com/iansmith/parigot/api/guest/syscall"
 	pcontext "github.com/iansmith/parigot/context"
 	"github.com/iansmith/parigot/g/syscall/v1"
 	lib "github.com/iansmith/parigot/lib/go"
@@ -25,13 +25,22 @@ func main() {
 		pcontext.Dump(ctx)
 	}()
 
+	log.Printf("zzzz --- must init client about to run")
 	myId := lib.MustInitClient(ctx, []lib.MustRequireFunc{greeting.MustRequire})
+	fut := lib.LaunchClient(ctx, myId)
+	fut.Failure(func(err syscall.KernelErr) {
+		pcontext.Errorf(ctx, "failed to launch the hello world service: %s", syscall.KernelErr_name[int32(err)])
+		lib.ExitClient(ctx, 1, myId, "exiting due to launch failure", "unable to exit, forcing exit with os.Exit() after failure to Launch()")
+	})
+	log.Printf("zzzz --- must init client done -- next is locate of %s", myId.Short())
 	greetService := greeting.MustLocate(ctx, myId)
+	log.Printf("zzzz --- must locate done")
 
 	req := &greeting.FetchGreetingRequest{
 		Tongue: greeting.Tongue_French,
 	}
 
+	log.Printf("xxx --- MAIN about to call FetchGreeting")
 	// Make the call to the greeting service.
 	greetFuture := greetService.FetchGreeting(ctx, req)
 
@@ -39,14 +48,16 @@ func main() {
 	greetFuture.Method.Success(func(response *greeting.FetchGreetingResponse) {
 		pcontext.Infof(ctx, "%s, world", response.Greeting)
 		pcontext.Dump(ctx)
-		syscallguest.Exit(0)
+		lib.ExitClient(ctx, 1, myId, "exiting after successful call to greeting.FetchGreeting",
+			"failed trying to exit after success, so forcing exit with os.Exit()")
 	})
 
 	//Handle negative outcome.
 	greetFuture.Method.Failure(func(err greeting.GreetErr) {
 		pcontext.Errorf(ctx, "failed to fetch greeting: %s", greeting.GreetErr_name[int32(err)])
 		pcontext.Dump(ctx)
-		syscallguest.Exit(1)
+		lib.ExitClient(ctx, 1, myId, "exiting because we failed to call greet.FetchGreeting",
+			"tried to exit after failed call to greet.FetchGreeting, failed so forcing exit with os.Exit()")
 	})
 
 	// MustRunClient should never return.  Timeout in millis is used

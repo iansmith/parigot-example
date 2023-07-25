@@ -2,7 +2,7 @@
 ## are relative to that dir, not this dir
 
 [config.dev]
-ParigotLibPath="plugin/syscall.so"
+ParigotLibPath="/workspaces/parigot/parigot/build/syscall.so"
 ParigotLibSymbol="ParigotInitialize"
 
 # the names of the microservices here have no significance, they are just for humans
