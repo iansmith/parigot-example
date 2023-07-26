@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 	"github.com/iansmith/parigot/api/shared/id"
@@ -23,13 +24,19 @@ func main() {
 
 	// Init initiaizes a service and normally receives a list of functions
 	// that indicate dependencies, but we don't have any here.
-	binding := greeting.Init(ctx, []lib.MustRequireFunc{}, impl)
+	binding, fut, _ := greeting.Init(ctx, []lib.MustRequireFunc{}, impl)
+
+	// Init() covers the case of a launch failure, so we only deal with success
+	fut.Success(func(_ *syscall.LaunchResponse) {
+		log.Printf("greeting service launched successfully")
+	})
 
 	// Run waits for calls to our single method and should not return.
 	kerr := greeting.Run(ctx, binding, greeting.TimeoutInMillis, nil)
 
 	// Should not happen.
 	pcontext.Errorf(ctx, "error caused run to exit in greeting: %s", syscall.KernelErr_name[int32(kerr)])
+
 }
 
 // myService is the true implementation of the greeting service.
