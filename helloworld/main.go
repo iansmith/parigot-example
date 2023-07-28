@@ -7,19 +7,33 @@ import (
 	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 
 	syscallguest "github.com/iansmith/parigot/api/guest/syscall"
+	apishared "github.com/iansmith/parigot/api/shared"
 	"github.com/iansmith/parigot/api/shared/id"
 	pcontext "github.com/iansmith/parigot/context"
 	"github.com/iansmith/parigot/g/syscall/v1"
 	lib "github.com/iansmith/parigot/lib/go"
+	"github.com/iansmith/parigot/lib/go/exit"
 )
+
+var timeoutInMillis = int32(500)
 
 func main() {
 	// Create a logging
 	ctx := pcontext.NewContextWithContainer(pcontext.GuestContext(context.Background()), "[hello-world]main")
 
+	exit.AtExit(func(ctx context.Context) {
+		pcontext.Infof(ctx, "program is exiting... we can clean up resources here")
+		pcontext.Dump(ctx)
+	})
+
 	// Logging system needs help with panics, so we trap and Dump() the log data.
 	defer func() {
 		if r := recover(); r != nil {
+			if r == apishared.ControlledExit {
+				// we want to just let this process die
+				pcontext.Dump(ctx)
+				return
+			}
 			pcontext.Infof(ctx, "helloworld: trapped a panic in the guest side: %v", r)
 			debug.PrintStack()
 		}
@@ -75,5 +89,3 @@ func afterLaunch(ctx context.Context, _ *syscall.LaunchResponse, myId id.Service
 	})
 
 }
-
-var timeoutInMillis = int32(500)

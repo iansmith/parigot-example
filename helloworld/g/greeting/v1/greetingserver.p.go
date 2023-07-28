@@ -107,7 +107,7 @@ func Run(ctx context.Context,
 	return kerr
 }
 
-var TimeoutInMillis = int32(10000)
+var TimeoutInMillis = int32(500)
 
 func ReadOneAndCall(ctx context.Context, binding *lib.ServiceMethodMap, 
 	timeoutInMillis int32) syscall.KernelErr{
@@ -119,7 +119,7 @@ func ReadOneAndCall(ctx context.Context, binding *lib.ServiceMethodMap,
 	}
 
 	req.TimeoutInMillis = timeoutInMillis
-	req.HostId = lib.CurrentHostId().Marshal()
+	req.HostId = syscallguest.CurrentHostId().Marshal()
 	resp, err:=syscallguest.ReadOne(&req)
 	if err!=syscall.KernelErr_NoError {
 		return err
@@ -155,7 +155,7 @@ func ReadOneAndCall(ctx context.Context, binding *lib.ServiceMethodMap,
 	fut.Success(func (result proto.Message){
 		rvReq:=&syscall.ReturnValueRequest{}
 		rvReq.CallId= cid.Marshal()
-		rvReq.HostId= lib.CurrentHostId().Marshal()
+		rvReq.HostId= syscallguest.CurrentHostId().Marshal()
 		var a anypb.Any
 		if err:=a.MarshalFrom(result); err!=nil {
 			pcontext.Errorf(ctx, "unable to marshal result for return value request")
@@ -168,7 +168,7 @@ func ReadOneAndCall(ctx context.Context, binding *lib.ServiceMethodMap,
 	fut.Failure(func (err int32) {
 		rvReq:=&syscall.ReturnValueRequest{}
 		rvReq.CallId= cid.Marshal()
-		rvReq.HostId= lib.CurrentHostId().Marshal()
+		rvReq.HostId= syscallguest.CurrentHostId().Marshal()
 		rvReq.ResultError = err
 		syscallguest.ReturnValue(rvReq) // nowhere for return value to go
 	})
@@ -187,7 +187,7 @@ func bind(ctx context.Context,sid id.ServiceId, impl Greeting) (*lib.ServiceMeth
 //
 
 	bindReq = &syscall.BindMethodRequest{}
-	bindReq.HostId = lib.CurrentHostId().Marshal()
+	bindReq.HostId = syscallguest.CurrentHostId().Marshal()
 	bindReq.ServiceId = sid.Marshal()
 	bindReq.MethodName = "FetchGreeting"
 	resp, err=syscallguest.BindMethod(bindReq)
@@ -237,7 +237,7 @@ func Register(ctx context.Context) (id.ServiceId, syscall.KernelErr){
 		Service:     "greeting",
 	}
 	req.Fqs = fqs
-	req.HostId = lib.CurrentHostId().Marshal()
+	req.HostId = syscallguest.CurrentHostId().Marshal()
 
 	resp, err := syscallguest.Register(req)
     if err!=syscall.KernelErr_NoError{
@@ -288,7 +288,7 @@ func LaunchService(ctx context.Context, sid id.ServiceId, impl Greeting) (*lib.S
 	req:=&syscall.LaunchRequest{
 		ServiceId: sid.Marshal(),
 		CallId: cid.Marshal(),
-		HostId: lib.CurrentHostId().Marshal(),
+		HostId: syscallguest.CurrentHostId().Marshal(),
 		MethodId: apishared.LaunchMethod.Marshal(),
 	}
 	fut:=syscallguest.Launch(req)

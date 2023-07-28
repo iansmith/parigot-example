@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/iansmith/parigot-example/hello-world/g/greeting/v1"
+	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 	pcontext "github.com/iansmith/parigot/context"
 )
 
