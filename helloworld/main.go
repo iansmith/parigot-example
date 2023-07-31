@@ -2,20 +2,21 @@ package main
 
 import (
 	"context"
+	"log"
 	"runtime/debug"
 
 	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
-
 	syscallguest "github.com/iansmith/parigot/api/guest/syscall"
 	apishared "github.com/iansmith/parigot/api/shared"
 	"github.com/iansmith/parigot/api/shared/id"
 	pcontext "github.com/iansmith/parigot/context"
+	"github.com/iansmith/parigot/g/file/v1"
 	"github.com/iansmith/parigot/g/syscall/v1"
 	lib "github.com/iansmith/parigot/lib/go"
 	"github.com/iansmith/parigot/lib/go/exit"
 )
 
-var timeoutInMillis = int32(500)
+var timeoutInMillis = int32(50)
 
 func main() {
 	// Create a logging
@@ -34,14 +35,16 @@ func main() {
 				pcontext.Dump(ctx)
 				return
 			}
+			log.Printf("helloworld: trapped a panic in the guest side: %v", r)
 			pcontext.Infof(ctx, "helloworld: trapped a panic in the guest side: %v", r)
 			debug.PrintStack()
 		}
 		pcontext.Dump(ctx)
 	}()
 
-	myId := lib.MustInitClient(ctx, []lib.MustRequireFunc{greeting.MustRequire})
+	myId := lib.MustInitClient(ctx, []lib.MustRequireFunc{greeting.MustRequire, file.MustRequire})
 	fut := lib.LaunchClient(ctx, myId)
+
 	fut.Failure(func(err syscall.KernelErr) {
 		pcontext.Errorf(ctx, "failed to launch the hello world service: %s", syscall.KernelErr_name[int32(err)])
 		lib.ExitClient(ctx, 1, myId, "exiting due to launch failure", "unable to exit, forcing exit with os.Exit() after failure to Launch()")

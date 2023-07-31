@@ -11,6 +11,15 @@ WasmPath="build/greeting.p.wasm"
 Arg=[]
 Env=[]
 
+# the names of the microservices here have no significance, they are just for humans
+[config.dev.microservice.file]
+WasmPath="/workspaces/parigot/parigot/build/file.p.wasm"
+PluginPath="/workspaces/parigot/parigot/build/file.so"
+PluginSymbol="ParigotInitialize"
+
+Arg=[]
+Env=[]
+
 
 # helloworld, it has no services that it implements, it just consumes greet.
 [config.dev.microservice.helloworld]
