@@ -2,13 +2,21 @@
 ## are relative to that dir, not this dir
 
 [config.dev]
-
-ParigotLibPath="plugin/syscall.so"
+ParigotLibPath="/workspaces/parigot/parigot/build/syscall.so"
 ParigotLibSymbol="ParigotInitialize"
 
 # the names of the microservices here have no significance, they are just for humans
 [config.dev.microservice.greet]
 WasmPath="build/greeting.p.wasm"
+Arg=[]
+Env=[]
+
+# the names of the microservices here have no significance, they are just for humans
+[config.dev.microservice.file]
+WasmPath="/workspaces/parigot/parigot/build/file.p.wasm"
+PluginPath="/workspaces/parigot/parigot/build/file.so"
+PluginSymbol="ParigotInitialize"
+
 Arg=[]
 Env=[]
 

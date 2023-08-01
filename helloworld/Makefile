@@ -3,25 +3,26 @@
 # build things it doesn't need to.
 all:  hello.p.wasm greeting.p.wasm
 
-PARIGOT_VERSION=f177af5c
+PARIGOT_VERSION=d9d85542a70c2e8553732c52248aafd837bd43fb
+GO_CLIENT_VERSION=1.21rc3
 
 # run unit test... this is tricky because you have to run this inside a wasm host
 # and this approach will not work if you have native code in your server
 # implementation
 .PHONY: test
 test:
-	GOROOT=/home/parigot/deps/go1.21 GOOS=wasip1 GOARCH=wasm go1.21 test -c -o tester ./greeting
+	GOROOT=/home/parigot/deps/go${GO_CLIENT_VERSION} GOOS=wasip1 GOARCH=wasm go${GO_CLIENT_VERSION} test -c -o tester ./greeting
 	wasmtime -- tester -test.v
 
 # first WASM file, compiled with GOOS and GOARCH set 
 .PHONY: hello.p.wasm
 hello.p.wasm:
-	GOROOT=/home/parigot/deps/go1.21 GOOS=wasip1 GOARCH=wasm go1.21 build -o build/hello.p.wasm ./main.go
+	GOROOT=/home/parigot/deps/go${GO_CLIENT_VERSION} GOOS=wasip1 GOARCH=wasm go${GO_CLIENT_VERSION} build -o build/hello.p.wasm ./main.go
 
 # second WASM file, compiled with GOOS and GOARCH set
 .PHONY: greeting.p.wasm
 greeting.p.wasm: 
-	GOROOT=/home/parigot/deps/go1.21 GOOS=wasip1 GOARCH=wasm go1.21 build -o build/greeting.p.wasm ./greeting/main.go
+	GOROOT=/home/parigot/deps/go${GO_CLIENT_VERSION} GOOS=wasip1 GOARCH=wasm go${GO_CLIENT_VERSION} build -o build/greeting.p.wasm ./greeting/main.go
 
 # this needs to be called to regenerate the generated files in
 # g/ that are derived from the .proto files.  You only need this
@@ -35,7 +36,7 @@ generate:
 .PHONY:clean
 clean:
 	rm -rf build/hello.p.wasm build/greeting.p.wasm
-	rm -rf g/*
+	rm -rf g/greeting
 	
 
 
@@ -45,16 +46,16 @@ clean:
 # affects the tools (runner and protoc-gen-parigot) and
 # the lib, syscall.so.
 .PHONY:tools
-tools:
+tools: generate
 	go get github.com/iansmith/parigot@${PARIGOT_VERSION}
 	go get github.com/iansmith/parigot/command/runner@${PARIGOT_VERSION}
 	go get github.com/iansmith/parigot/command/protoc-gen-parigot@${PARIGOT_VERSION}
 	go install github.com/iansmith/parigot/command/runner
 	go install github.com/iansmith/parigot/command/protoc-gen-parigot
-	rm -f /home/parigot/tools/bin/runner
-	ln -s /home/parigot/go/bin/runner /home/parigot/tools/bin/runner
-	rm -f /home/parigot/tools/bin/protoc-gen-parigot
-	ln -s /home/parigot/go/bin/protoc-gen-parigot /home/parigot/tools/bin/protoc-gen-parigot
+#	rm -f /home/parigot/tools/bin/runner
+#	ln -s /home/parigot/go/bin/runner /home/parigot/tools/bin/runner
+#	rm -f /home/parigot/tools/bin/protoc-gen-parigot
+#	ln -s /home/parigot/go/bin/protoc-gen-parigot /home/parigot/tools/bin/protoc-gen-parigot
 	go get github.com/iansmith/parigot/api/plugin/syscall/main@${PARIGOT_VERSION}
 	go build -o plugin/syscall.so -buildmode=plugin github.com/iansmith/parigot/api/plugin/syscall/main
 

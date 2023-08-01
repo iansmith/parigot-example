@@ -2,30 +2,70 @@ package main
 
 import (
 	"context"
+	"log"
 	"runtime/debug"
 
-	"github.com/iansmith/parigot-example/hello-world/g/greeting/v1"
-
+	"github.com/iansmith/parigot-example/helloworld/g/greeting/v1"
 	syscallguest "github.com/iansmith/parigot/api/guest/syscall"
+	apishared "github.com/iansmith/parigot/api/shared"
+	"github.com/iansmith/parigot/api/shared/id"
 	pcontext "github.com/iansmith/parigot/context"
+	"github.com/iansmith/parigot/g/file/v1"
 	"github.com/iansmith/parigot/g/syscall/v1"
 	lib "github.com/iansmith/parigot/lib/go"
+	"github.com/iansmith/parigot/lib/go/exit"
 )
+
+var timeoutInMillis = int32(50)
 
 func main() {
 	// Create a logging
 	ctx := pcontext.NewContextWithContainer(pcontext.GuestContext(context.Background()), "[hello-world]main")
 
+	exit.AtExit(func(ctx context.Context) {
+		pcontext.Infof(ctx, "program is exiting... we can clean up resources here")
+		pcontext.Dump(ctx)
+	})
+
 	// Logging system needs help with panics, so we trap and Dump() the log data.
 	defer func() {
 		if r := recover(); r != nil {
+			if r == apishared.ControlledExit {
+				// we want to just let this process die
+				pcontext.Dump(ctx)
+				return
+			}
+			log.Printf("helloworld: trapped a panic in the guest side: %v", r)
 			pcontext.Infof(ctx, "helloworld: trapped a panic in the guest side: %v", r)
 			debug.PrintStack()
 		}
 		pcontext.Dump(ctx)
 	}()
 
-	myId := lib.MustInitClient(ctx, []lib.MustRequireFunc{greeting.MustRequire})
+	myId := lib.MustInitClient(ctx, []lib.MustRequireFunc{greeting.MustRequire, file.MustRequire})
+	fut := lib.LaunchClient(ctx, myId)
+
+	fut.Failure(func(err syscall.KernelErr) {
+		pcontext.Errorf(ctx, "failed to launch the hello world service: %s", syscall.KernelErr_name[int32(err)])
+		lib.ExitClient(ctx, 1, myId, "exiting due to launch failure", "unable to exit, forcing exit with os.Exit() after failure to Launch()")
+	})
+
+	fut.Success(func(resp *syscall.LaunchResponse) {
+		pcontext.Infof(ctx, "hello world launched successfully")
+		afterLaunch(ctx, resp, myId, fut)
+	})
+
+	// MustRunClient should never return.  Timeout in millis is used
+	// for the question of how long should we "wait" for a network call
+	// before doing something else.
+	err := lib.MustRunClient(ctx, timeoutInMillis)
+
+	// Should not happen.
+	pcontext.Errorf(ctx, "failed inside run: %s", syscall.KernelErr_name[int32(err)])
+	lib.ExitClient(ctx, 1, myId, "failed in MustRunClient", "failed trying to exit after failure in MustRunClient")
+}
+
+func afterLaunch(ctx context.Context, _ *syscall.LaunchResponse, myId id.ServiceId, fut *syscallguest.LaunchFuture) {
 	greetService := greeting.MustLocate(ctx, myId)
 
 	req := &greeting.FetchGreetingRequest{
@@ -39,23 +79,16 @@ func main() {
 	greetFuture.Method.Success(func(response *greeting.FetchGreetingResponse) {
 		pcontext.Infof(ctx, "%s, world", response.Greeting)
 		pcontext.Dump(ctx)
-		syscallguest.Exit(0)
+		lib.ExitClient(ctx, 1, myId, "exiting after successful call to greeting.FetchGreeting",
+			"failed trying to exit after success, so forcing exit with os.Exit()")
 	})
 
 	//Handle negative outcome.
 	greetFuture.Method.Failure(func(err greeting.GreetErr) {
 		pcontext.Errorf(ctx, "failed to fetch greeting: %s", greeting.GreetErr_name[int32(err)])
 		pcontext.Dump(ctx)
-		syscallguest.Exit(1)
+		lib.ExitClient(ctx, 1, myId, "exiting because we failed to call greet.FetchGreeting",
+			"tried to exit after failed call to greet.FetchGreeting, failed so forcing exit with os.Exit()")
 	})
 
-	// MustRunClient should never return.  Timeout in millis is used
-	// for the question of how long should we "wait" for a network call
-	// before doing something else.
-	err := lib.MustRunClient(ctx, timeoutInMillis)
-
-	// Should not happen.
-	pcontext.Fatalf(ctx, "failed inside run: %s", syscall.KernelErr_name[int32(err)])
 }
-
-var timeoutInMillis = int32(500)
