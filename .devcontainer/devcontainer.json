@@ -19,9 +19,9 @@
 		}
 	},
 	"remoteUser": "parigot",
-	"features": {
-		"git": "os-provided"
-	},
+// 	"features": {
+// 		"git": "os-provided"
+// 	},
 	"postCreateCommand": "go version",
 	"mounts": [
 	]	
